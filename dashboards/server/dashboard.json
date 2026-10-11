@@ -1,0 +1,12 @@
+{
+  "name": "Server",
+  "description": "A homelab status board: CPU, memory, load, Docker containers, Unraid disks and recent ntfy alerts.",
+  "type": "html",
+  "refresh": 120,
+  "sources": {
+    "host": {"builtin": "host"},
+    "docker": {"builtin": "docker", "url": "${DOCKER_URL}"},
+    "unraid": {"builtin": "unraid"},
+    "ntfy": {"builtin": "ntfy", "url": "${NTFY_URL}", "topics": "${NTFY_TOPICS}", "token": "${NTFY_TOKEN}"}
+  }
+}

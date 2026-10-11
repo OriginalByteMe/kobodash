@@ -1,0 +1,8 @@
+{
+  "name": "Web page",
+  "description": "Screenshots any web page, such as a Home Assistant or Grafana dashboard, and shows it on the Kobo.",
+  "type": "url",
+  "refresh": 300,
+  "url": "${DASHBOARD_URL}",
+  "wait": 5
+}

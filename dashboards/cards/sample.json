@@ -1,0 +1,14 @@
+{
+  "cards": {
+    "title": "Home",
+    "subtitle": "Rooms, energy and chores",
+    "cards": [
+      {"title": "Living room", "value": "21.5°C", "note": "Humidity 48%", "icon": "thermostat"},
+      {"title": "Power now", "value": "1.8 kW", "note": "Solar covers 57%", "icon": "bolt"},
+      {"title": "Front door", "value": "Locked", "note": "Last opened at 07:58", "icon": "lock"},
+      {"title": "Rain barrel", "value": "68%", "note": "About 340 litres", "icon": "water_drop"},
+      {"title": "Tonight", "icon": "checklist", "items": ["Put the bins out", "Water the plants", "Call the plumber"]},
+      {"title": "Car", "value": "82%", "note": "Charged by 06:30", "icon": "directions_car"}
+    ]
+  }
+}

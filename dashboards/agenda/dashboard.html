@@ -1,0 +1,114 @@
+{#- Agenda: today's date, a one-line forecast and a list read from your own JSON API.
+    This is the template to copy when you want to wire up an API of your own.
+
+    1. In dashboard.json the "agenda" source is a plain URL (set AGENDA_URL in .env). Add
+       "headers": {"Authorization": "Bearer ${AGENDA_TOKEN}"} if the API needs a key.
+    2. The endpoint returns JSON; the server hands it to this template as src.agenda:
+
+         {"items": [{"time": "09:30", "title": "Dentist", "note": "optional"}]}
+
+    3. The loop below reads time, title and note. If your API names them differently, change
+       it.get('time') and friends there. Optional fields are read with .get() so a missing one is
+       just empty; a field the API never sends would otherwise stop the render.
+
+    Items should come sorted by time. A time written HH:MM gets past/next treatment: earlier
+    ones are struck through, the first upcoming one is inverted. Anything else ("All day") is
+    left alone. -#}
+{% set w = src.get('weather') %}{% set data = src.get('agenda') %}
+{% set k = screen.width / 1072 %}
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; font-src file:">
+<style>
+@font-face { font-family: Inter; src: url("{{ font_dir }}/InterVariable.ttf"); font-weight: 100 900; }
+@font-face { font-family: Symbols; src: url("{{ font_dir }}/MaterialSymbolsOutlined.ttf"); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { zoom: {{ k }}; background: #fff; }
+body { width: 1072px; height: {{ (screen.height / k)|round(1) }}px; overflow: hidden; background: #fff; color: #000;
+       font: 600 26px/1.2 Inter, sans-serif; font-feature-settings: "tnum", "cv11";
+       padding: 30px 44px 20px; display: flex; flex-direction: column; }
+.i { font-family: Symbols; font-weight: 400; line-height: 1; vertical-align: -0.15em; display: inline-block;
+     font-variation-settings: "FILL" 0, "wght" 600, "GRAD" 0, "opsz" 48; }
+.dim { color: #333; }
+
+header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 14px; }
+.day { font-size: 104px; font-weight: 800; letter-spacing: -.035em; line-height: .95; }
+.date { font-size: 40px; font-weight: 700; margin-top: 8px; }
+.status { text-align: right; font-size: 22px; font-weight: 600; line-height: 1.45; }
+
+.wx { border-top: 3px solid #000; padding: 14px 0; display: flex; align-items: center; gap: 16px; font-size: 32px; }
+.wx .i { font-size: 64px; }
+.wx b { font-size: 44px; font-weight: 800; }
+.wx span { white-space: nowrap; }
+
+.agenda { flex: 1; min-height: 0; border-top: 3px solid #000; padding-top: 10px; display: flex; flex-direction: column; }
+h2 { font-size: 20px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px;
+     display: flex; justify-content: space-between; align-items: baseline; }
+h2 span { font-size: 22px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.list { flex: 1; min-height: 0; display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; overflow: hidden; }
+.item { width: 100%; display: grid; grid-template-columns: calc(var(--t) * 4.6) minmax(0, 1fr); column-gap: 14px; padding: var(--p) 10px; border-bottom: 2px solid #999; }
+.item .time { font-size: var(--t); font-weight: 800; line-height: 1.1; white-space: nowrap; }
+.item .title { font-size: var(--t); font-weight: 800; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .note { font-size: var(--n); font-weight: 600; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item.past .time, .item.past .title { text-decoration: line-through; text-decoration-thickness: 3px; font-weight: 600; }
+.item.next { background: #000; color: #fff; border-bottom-color: #000; }
+.empty { margin: auto; text-align: center; font-size: 54px; font-weight: 800; line-height: 1.3; }
+.empty div { font-size: 28px; font-weight: 600; }
+
+footer { border-top: 2px solid #000; padding-top: 8px; font-size: 19px; font-weight: 600; }
+footer > div { display: flex; justify-content: space-between; }
+.errs { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+</style></head>
+<body>
+
+<header>
+  <div><div class="day">{{ now.strftime('%A') }}</div><div class="date">{{ now.strftime('%-d %B %Y') }}</div></div>
+  <div class="status">
+    Updated {{ now.strftime('%H:%M') }}<br>
+    {% if device.battery %}<span class="i">{{ 'battery_charging_full' if device.charging else 'battery_full' }}</span> {{ device.battery }}%{% endif %}
+  </div>
+</header>
+
+{% if w %}
+<div class="wx">
+  <span class="i">{{ w.now.icon }}</span>
+  <b>{{ w.now.temp|round|int }}°</b>
+  <span>{{ w.now.label }} · {{ w.today.hi|round|int }}° / {{ w.today.lo|round|int }}° · Rain {{ w.today.rain_p }}%</span>
+</div>
+{% endif %}
+
+<div class="agenda">
+{% if data is mapping %}
+  {% set items = data.get('items') or [] %}
+  {% set hhmm = now.strftime('%H:%M') %}
+  {% set ns = namespace(next=-1) %}
+  {% for it in items %}
+    {% set tm = '' if it.get('time') is none else it.get('time')|string %}
+    {% if ns.next < 0 and tm|length == 5 and tm[2:3] == ':' and tm >= hhmm %}{% set ns.next = loop.index0 %}{% endif %}
+  {% endfor %}
+  <h2>Today <span>{{ items|length }} item{{ '' if items|length == 1 else 's' }}</span></h2>
+  {# few items: big rows; many items: small rows (title px, note px, padding px) #}
+  {% set sz = (56, 32, 24) if items|length <= 5 else (46, 28, 16) if items|length <= 8 else (36, 24, 10) %}
+  <div class="list" style="--t: {{ sz[0] }}px; --n: {{ sz[1] }}px; --p: {{ sz[2] }}px">
+  {% for it in items %}
+    {% set tm = '' if it.get('time') is none else it.get('time')|string %}
+    {% set past = tm|length == 5 and tm[2:3] == ':' and tm < hhmm %}
+    <div class="item{{ ' past' if past else '' }}{{ ' next' if loop.index0 == ns.next else '' }}">
+      <div class="time">{{ tm }}</div>
+      <div><div class="title">{{ it.get('title') or '' }}</div>{% if it.get('note') %}<div class="note">{{ it.get('note') }}</div>{% endif %}</div>
+    </div>
+  {% else %}<div class="empty">Nothing planned<div>Enjoy the day.</div></div>{% endfor %}
+  </div>
+{% else %}
+  <div class="empty">Agenda unavailable<div>Set AGENDA_URL in your .env file</div></div>
+{% endif %}
+</div>
+
+<footer>
+  {% if errors %}<div class="errs"><span class="i">error</span> {% for name, msg in errors.items() %}{{ name }}: {{ msg }}{{ ' · ' if not loop.last else '' }}{% endfor %}</div>{% endif %}
+  <div>
+    <span>{{ [device.id, ('Wi-Fi ' ~ device.rssi ~ ' dBm') if device.rssi else '', ('client ' ~ device.fw) if device.fw else '']|select|join(' · ') }}</span>
+    <span>Next refresh {{ next.strftime('%H:%M') }}</span>
+  </div>
+</footer>
+</body></html>

@@ -1,0 +1,9 @@
+{
+  "name": "Weather",
+  "description": "A weather-only screen with a huge temperature, the next six hours and three days, readable across a room.",
+  "type": "html",
+  "refresh": 600,
+  "sources": {
+    "weather": {"builtin": "weather"}
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "weather": {
+    "now": {"temp": 14.2, "feels": 12.6, "humidity": 82, "wind": 19.0, "label": "Light rain", "icon": "rainy_light"},
+    "today": {"hi": 16.4, "lo": 9.1, "rain_p": 80, "rain_mm": 6.3, "name": "Tue", "label": "Light rain", "icon": "rainy_light",
+              "uv": 2.1, "uv_label": "Low", "sunrise": "06:52", "sunset": "18:14"},
+    "hours": [
+      {"hour": "09", "temp": 14.6, "rain_p": 75, "label": "Light rain", "icon": "rainy_light"},
+      {"hour": "10", "temp": 15.2, "rain_p": 80, "label": "Rain", "icon": "rainy"},
+      {"hour": "11", "temp": 15.9, "rain_p": 85, "label": "Rain", "icon": "rainy"},
+      {"hour": "12", "temp": 16.4, "rain_p": 60, "label": "Light rain", "icon": "rainy_light"},
+      {"hour": "13", "temp": 16.2, "rain_p": 40, "label": "Overcast", "icon": "cloud"},
+      {"hour": "14", "temp": 15.8, "rain_p": 25, "label": "Partly cloudy", "icon": "partly_cloudy_day"},
+      {"hour": "15", "temp": 15.1, "rain_p": 15, "label": "Partly cloudy", "icon": "partly_cloudy_day"},
+      {"hour": "16", "temp": 14.3, "rain_p": 10, "label": "Mainly clear", "icon": "partly_cloudy_day"}
+    ],
+    "days": [
+      {"hi": 15.1, "lo": 8.4, "rain_p": 45, "rain_mm": 2.2, "name": "Wed", "label": "Showers", "icon": "rainy"},
+      {"hi": 17.8, "lo": 7.9, "rain_p": 10, "rain_mm": 0.0, "name": "Thu", "label": "Partly cloudy", "icon": "partly_cloudy_day"},
+      {"hi": 19.3, "lo": 9.6, "rain_p": 5, "rain_mm": 0.0, "name": "Fri", "label": "Clear", "icon": "clear_day"}
+    ]
+  }
+}

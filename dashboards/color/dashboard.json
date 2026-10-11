@@ -1,0 +1,11 @@
+{
+  "name": "Color",
+  "description": "A weather, air quality and notifications screen for colour Kobos (Kaleido 3, for example Clara Colour) that stays readable in grayscale.",
+  "type": "html",
+  "refresh": 300,
+  "sources": {
+    "weather": {"builtin": "weather"},
+    "air": {"builtin": "air"},
+    "ntfy": {"builtin": "ntfy", "url": "${NTFY_URL}", "topics": "${NTFY_TOPICS}", "token": "${NTFY_TOKEN}"}
+  }
+}

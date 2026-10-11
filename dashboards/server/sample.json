@@ -1,0 +1,24 @@
+{
+  "host": {"cpu": 23.6, "cpu_temp": 52.0, "cores": 16, "load": ["1.42", "1.18", "0.96"], "uptime": "34d 7h", "mem_used": 21.4, "mem_total": 64.0, "mem_pct": 33.4},
+  "docker": {"running": 31, "total": 34, "unhealthy": ["paperless-web"], "stopped": ["old-test", "scratch"]},
+  "unraid": {
+    "array": "Started",
+    "parity": "Last parity check 6d 3h ago · 0 errors",
+    "disks": [
+      {"name": "parity", "type": "Parity", "status": "OK", "temp": 36, "errors": 0, "used": null, "free_tb": 0.0},
+      {"name": "disk1", "type": "Data", "status": "OK", "temp": 34, "errors": 0, "used": 0.62, "free_tb": 3.41},
+      {"name": "disk2", "type": "Data", "status": "OK", "temp": null, "errors": 0, "used": 0.34, "free_tb": 5.28},
+      {"name": "disk3", "type": "Data", "status": "OK", "temp": 33, "errors": 0, "used": 0.91, "free_tb": 0.72},
+      {"name": "disk4", "type": "Data", "status": "OK", "temp": 35, "errors": 0, "used": 0.78, "free_tb": 1.94},
+      {"name": "disk5", "type": "Data", "status": "OK", "temp": null, "errors": 0, "used": 0.12, "free_tb": 7.02},
+      {"name": "cache", "type": "Cache", "status": "OK", "temp": 41, "errors": 0, "used": 0.47, "free_tb": 0.51},
+      {"name": "scratch", "type": "Cache", "status": "OK", "temp": 39, "errors": 0, "used": 0.08, "free_tb": 0.92}
+    ]
+  },
+  "ntfy": [
+    {"when": "08:31", "topic": "alerts", "title": "Container unhealthy: paperless-web", "message": "Health check failed 3 times in a row. Last output: connection refused on port 8000.", "urgent": true},
+    {"when": "03:15", "topic": "cron", "title": "Nightly backup finished", "message": "128 GB copied in 41 min, 0 errors.", "urgent": false},
+    {"when": "Mon 22:41", "topic": "uptime", "title": "", "message": "Router: WAN link restored after 42 s.", "urgent": false},
+    {"when": "Mon 18:05", "topic": "cron", "title": "Certificate renewed", "message": "example.com is valid for another 89 days.", "urgent": false}
+  ]
+}

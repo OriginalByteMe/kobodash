@@ -1,0 +1,9 @@
+{
+  "name": "Cards",
+  "description": "A no-HTML dashboard: point CARDS_URL at any JSON endpoint and it lays the cards out for you.",
+  "type": "html",
+  "refresh": 300,
+  "sources": {
+    "cards": {"url": "${CARDS_URL}", "cache": 60}
+  }
+}

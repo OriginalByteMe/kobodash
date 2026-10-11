@@ -1,0 +1,186 @@
+{#- Color: for colour Kobos (Kaleido 3, e.g. Clara Colour). Weather, air quality and notifications.
+    Kaleido colour is muted and sits at half the resolution of the black-and-white layer, so:
+      * text and thin lines stay pure black on white; colour only goes into solid blocks (tiles, bars);
+      * four saturated colours with different brightness (dark blue, green, amber, red);
+      * colour is never the only signal: every coloured block also carries a number or a word,
+        and every block has a black outline, so the screen reads the same in grayscale.
+    Temperature colours: under 10 blue, under 20 green, under 28 amber, above that red.
+    Every source is optional; panels hide when their source is missing or failed. -#}
+{% set w = src.get('weather') %}{% set air = src.get('air') %}{% set notes = src.get('ntfy') %}
+{% set k = screen.width / 1072 %}
+{% macro tc(t) %}{{ 'blue' if t < 10 else 'green' if t < 20 else 'amber' if t < 28 else 'red' }}{% endmacro %}
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; font-src file:">
+<style>
+@font-face { font-family: Inter; src: url("{{ font_dir }}/InterVariable.ttf"); font-weight: 100 900; }
+@font-face { font-family: Symbols; src: url("{{ font_dir }}/MaterialSymbolsOutlined.ttf"); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { zoom: {{ k }}; background: #fff; }
+body { width: 1072px; height: {{ (screen.height / k)|round(1) }}px; overflow: hidden; background: #fff; color: #000;
+       font: 500 24px/1.25 Inter, sans-serif; font-feature-settings: "tnum", "cv11";
+       padding: 30px 44px 20px; display: flex; flex-direction: column; }
+.blue  { --c: #0a3be0; --on: #fff; }
+.green { --c: #009a44; --on: #fff; }
+.amber { --c: #ffb000; --on: #000; }
+.red   { --c: #e0001b; --on: #fff; }
+.i { font-family: Symbols; font-weight: 400; line-height: 1; vertical-align: -0.15em; display: inline-block;
+     font-variation-settings: "FILL" 0, "wght" 600, "GRAD" 0, "opsz" 48; }
+.dim { color: #333; font-weight: 600; }
+.label { font-size: 18px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.big { font-size: 56px; font-weight: 800; line-height: 1.05; }
+.big small { font-size: 24px; font-weight: 700; }
+
+header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 10px; }
+.day { font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.date { font-size: 28px; font-weight: 600; margin-top: 4px; }
+.status { text-align: right; font-size: 22px; font-weight: 600; line-height: 1.45; }
+
+main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+section { flex: 1 1 auto; border-top: 3px solid #000; padding: 10px 0 12px; display: flex; flex-direction: column; justify-content: center; }
+section.fill { flex: 99 1 0; min-height: 0; justify-content: flex-start; }
+h2 { font-size: 19px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 6px;
+     display: flex; justify-content: space-between; align-items: baseline; }
+h2 span { font-size: 20px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+
+.hero { display: grid; grid-template-columns: 176px auto 1fr; align-items: center; column-gap: 24px; }
+.tile { width: 176px; height: 176px; background: var(--c); color: var(--on); box-shadow: inset 0 0 0 4px #000;
+        display: flex; align-items: center; justify-content: center; }
+.tile .i { font-size: 128px; font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 48; }
+.temp { font-size: 128px; font-weight: 800; letter-spacing: -.04em; line-height: .9; }
+.cond { font-size: 23px; line-height: 1.45; }
+.cond b { font-size: 34px; font-weight: 800; display: block; line-height: 1.15; margin-bottom: 2px; }
+
+.hours { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; column-gap: 8px; text-align: center; }
+.hours .t { font-size: 26px; font-weight: 800; }
+.plot { height: 150px; display: flex; align-items: flex-end; justify-content: center; }
+.plot i { width: 66%; background: var(--c); box-shadow: inset 0 0 0 3px #000; }
+.hours .i { font-size: 40px; margin: 6px 0 2px; }
+
+.days > div { display: grid; grid-template-columns: 90px 52px 1fr 150px; align-items: center; column-gap: 14px; padding: 5px 0; }
+.days b { font-size: 28px; font-weight: 800; }
+.days .i { font-size: 44px; }
+.range { position: relative; height: 24px; border: 3px solid #000; }
+.range i { position: absolute; top: -3px; bottom: -3px; background: var(--c); box-shadow: inset 0 0 0 3px #000; }
+.days .t { font-size: 26px; font-weight: 800; text-align: right; white-space: nowrap; }
+.days .t span { font-weight: 600; }
+
+.cells { display: flex; }
+.cells > div { flex: 1 1 0; min-width: 0; }
+.cells > div:first-child { flex-grow: 1.35; }
+.cells > div + div { border-left: 2px solid #000; padding-left: 22px; margin-left: 22px; }
+.num { display: flex; align-items: baseline; gap: 14px; }
+.num span:last-child { font-size: 26px; font-weight: 800; }
+.meter { position: relative; height: 24px; border: 3px solid #000; margin: 6px 0 4px; }
+.meter i { position: absolute; top: -3px; bottom: -3px; left: -3px; background: var(--c); box-shadow: inset 0 0 0 3px #000; }
+
+.notes { flex: 1; min-height: 0; display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; overflow: hidden; }
+.note { width: 100%; display: grid; grid-template-columns: 124px 1fr; column-gap: 12px; padding: 6px 0 6px 18px; position: relative; border-bottom: 2px solid #999; }
+.note::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 10px; background: var(--c); box-shadow: inset 0 0 0 2px #000; }
+.note .when { font-weight: 700; font-size: 22px; white-space: nowrap; }
+.note b { font-weight: 800; }
+.note .msg { font-size: 22px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.note.urgent .when { background: #000; color: #fff; padding: 0 8px; justify-self: start; align-self: start; }
+
+.empty { margin: auto; text-align: center; font-size: 46px; font-weight: 800; line-height: 1.3; }
+.empty div { font-size: 26px; font-weight: 600; }
+
+footer { border-top: 2px solid #000; padding-top: 8px; font-size: 19px; font-weight: 600; }
+footer > div { display: flex; justify-content: space-between; }
+.errs { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+</style></head>
+<body>
+
+<header>
+  <div><div class="day">{{ now.strftime('%A') }}</div><div class="date">{{ now.strftime('%-d %B %Y') }}</div></div>
+  <div class="status">
+    Updated {{ now.strftime('%H:%M') }}<br>
+    {% if device.battery %}<span class="i">{{ 'battery_charging_full' if device.charging else 'battery_full' }}</span> {{ device.battery }}%{% endif %}
+  </div>
+</header>
+
+<main>
+{% if w %}
+<section class="hero">
+  <div class="tile {{ tc(w.now.temp)|trim }}"><span class="i">{{ w.now.icon }}</span></div>
+  <div class="temp">{{ w.now.temp|round|int }}°</div>
+  <div class="cond">
+    <b>{{ w.now.label }}</b>
+    Feels {{ w.now.feels|round|int }}° · {{ w.now.humidity }}% humid · {{ w.now.wind|round|int }} km/h<br>
+    High {{ w.today.hi|round|int }}° · Low {{ w.today.lo|round|int }}° · Rain {{ w.today.rain_p }}%<br>
+    <span class="i">wb_twilight</span> {{ w.today.sunrise }} – {{ w.today.sunset }}
+  </div>
+</section>
+
+{% if w.hours %}
+{% set hs = w.hours[:8] %}
+{% set lo = hs|map(attribute='temp')|min %}{% set span = ((hs|map(attribute='temp')|max) - lo) or 1 %}
+<section class="hours">
+  {% for h in hs %}<div class="{{ tc(h.temp)|trim }}">
+    <div class="t">{{ h.temp|round|int }}°</div>
+    <div class="plot"><i style="height: {{ (34 + 110 * (h.temp - lo) / span)|round|int }}px"></i></div>
+    <span class="i">{{ h.icon }}</span>
+    <div class="dim">{{ h.hour }}:00<br>{{ h.rain_p }}%</div>
+  </div>{% endfor %}
+</section>
+{% endif %}
+
+{% if w.days %}
+{% set ds = w.days[:3] %}
+{% set lo = (ds|map(attribute='lo')|list + [w.today.lo])|min %}{% set span = (((ds|map(attribute='hi')|list + [w.today.hi])|max) - lo) or 1 %}
+<section class="days">
+  {% for d in ds %}<div class="{{ tc(d.hi)|trim }}">
+    <b>{{ d.name }}</b><span class="i">{{ d.icon }}</span>
+    <div class="range"><i style="left: {{ (100 * (d.lo - lo) / span)|round|int }}%; width: {{ [(100 * (d.hi - d.lo) / span)|round|int, 6]|max }}%"></i></div>
+    <div class="t">{{ d.hi|round|int }}° <span class="dim">/ {{ d.lo|round|int }}°</span></div>
+  </div>{% endfor %}
+</section>
+{% endif %}
+{% endif %}
+
+{% if air or w %}
+<section><div class="cells">
+  {% if air %}
+  <div class="{{ 'green' if air.aqi <= 50 else 'amber' if air.aqi <= 100 else 'red' }}">
+    <div class="label">Air quality · US AQI</div>
+    <div class="num"><span class="big">{{ air.aqi }}</span><span>{{ air.label }}</span></div>
+    <div class="meter"><i style="width: {{ [100 * air.aqi / 200, 100]|min|round|int }}%"></i></div>
+    <div class="dim">PM2.5 {{ air.pm25|round|int }} · PM10 {{ air.pm10|round|int }} µg/m³</div>
+  </div>
+  {% endif %}
+  {% if w %}
+  <div class="{{ 'green' if w.today.uv < 3 else 'amber' if w.today.uv < 6 else 'red' }}">
+    <div class="label">UV max</div>
+    <div class="num"><span class="big">{{ w.today.uv|round(1) }}</span><span>{{ w.today.uv_label }}</span></div>
+    <div class="meter"><i style="width: {{ [100 * w.today.uv / 11, 100]|min|round|int }}%"></i></div>
+    <div class="dim">Scale 0 to 11+</div>
+  </div>
+  {% endif %}
+</div></section>
+{% endif %}
+
+{% if notes is not none %}
+<section class="fill">
+  <h2>Notifications <span>last 24 h</span></h2>
+  <div class="notes">
+  {% for n in notes %}
+    <div class="note {{ 'red' if n.urgent else 'blue' }}{{ ' urgent' if n.urgent else '' }}"><div class="when">{{ n.when }}</div>
+      <div><b>{{ n.title or n.topic }}</b>{% if n.title %} <span class="dim">· {{ n.topic }}</span>{% endif %}<div class="msg">{{ n.message }}</div></div></div>
+  {% else %}<div class="dim">Nothing in the last 24 hours</div>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not (w or air or notes is not none) %}
+<div class="empty">No data yet<div>None of the sources in dashboard.json returned anything.<br>Check your .env settings.</div></div>
+{% endif %}
+</main>
+
+<footer>
+  {% if errors %}<div class="errs"><span class="i">error</span> {% for name, msg in errors.items() %}{{ name }}: {{ msg }}{{ ' · ' if not loop.last else '' }}{% endfor %}</div>{% endif %}
+  <div>
+    <span>{{ [device.id, ('Wi-Fi ' ~ device.rssi ~ ' dBm') if device.rssi else '', ('client ' ~ device.fw) if device.fw else '']|select|join(' · ') }}</span>
+    <span>Next refresh {{ next.strftime('%H:%M') }}</span>
+  </div>
+</footer>
+</body></html>

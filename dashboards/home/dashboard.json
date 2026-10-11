@@ -1,0 +1,14 @@
+{
+  "name": "Home",
+  "description": "Weather, air quality, server health and notifications on one screen; each panel hides itself when its source is not configured.",
+  "type": "html",
+  "refresh": 180,
+  "sources": {
+    "weather": {"builtin": "weather"},
+    "air": {"builtin": "air"},
+    "host": {"builtin": "host"},
+    "unraid": {"builtin": "unraid"},
+    "docker": {"builtin": "docker", "url": "${DOCKER_URL}"},
+    "ntfy": {"builtin": "ntfy", "url": "${NTFY_URL}", "topics": "${NTFY_TOPICS}", "token": "${NTFY_TOKEN}"}
+  }
+}

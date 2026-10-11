@@ -1,0 +1,10 @@
+{
+  "name": "Agenda",
+  "description": "Today at a glance: the date, a one-line forecast and an agenda read from any JSON API at AGENDA_URL.",
+  "type": "html",
+  "refresh": 600,
+  "sources": {
+    "weather": {"builtin": "weather"},
+    "agenda": {"url": "${AGENDA_URL}", "cache": 120}
+  }
+}

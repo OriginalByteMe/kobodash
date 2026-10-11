@@ -1,0 +1,20 @@
+{
+  "weather": {
+    "now": {"temp": 18.4, "feels": 17.1, "humidity": 64, "wind": 14.0, "label": "Partly cloudy", "icon": "partly_cloudy_day"},
+    "today": {"hi": 21.3, "lo": 11.8, "rain_p": 35, "rain_mm": 1.2, "name": "Tue", "label": "Partly cloudy", "icon": "partly_cloudy_day",
+              "uv": 4.6, "uv_label": "Moderate", "sunrise": "06:48", "sunset": "18:21"},
+    "hours": [],
+    "days": []
+  },
+  "agenda": {
+    "items": [
+      {"time": "All day", "title": "Bins out tonight"},
+      {"time": "08:30", "title": "School run", "note": "Leave by 08:10"},
+      {"time": "10:00", "title": "Dentist", "note": "12 Mill Street, bring the insurance card"},
+      {"time": "12:30", "title": "Lunch with Sam"},
+      {"time": "15:00", "title": "Team sync", "note": "Video call, agenda is in the shared doc"},
+      {"time": "17:45", "title": "Collect parcel", "note": "Locker 14, code is in your email"},
+      {"time": "19:30", "title": "Football practice"}
+    ]
+  }
+}

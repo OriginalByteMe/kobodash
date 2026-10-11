@@ -1,0 +1,45 @@
+{
+  "_comment": "Upstream pieces kobodash downloads, each verified by sha256 before anything is written to a Kobo. Generated from a clone of usetrmnl/trmnl-kobo at `commit`: client = sha256 of `git show <commit>:src/TRMNL/<file>` for every file there; nickelmenu and kobostuff = sha256 of the committed files under doc/distrib/. Re-pin by changing commit and regenerating.",
+  "repo": "usetrmnl/trmnl-kobo",
+  "commit": "57346b5a827f3ce4dd204ea63417de088068c625",
+  "nickelmenu": {
+    "path": "doc/distrib/nickelmenu/KoboRoot.tgz",
+    "sha256": "450c73c9b096b5ad66f9bff7f0ba9b222ed2a888041649957509cb57123108d0"
+  },
+  "kobostuff": {
+    "path": "doc/distrib/kobostuff/kobo-stuff-1.6.N-r18901.tar.xz",
+    "sha256": "289e6959a71d1cd9dc3e5f770a03280b23b54e77404ae19147ad3dd702905d1f",
+    "member": "KoboStuff/KoboRoot.tgz"
+  },
+  "client_dir": "src/TRMNL/",
+  "client": {
+    "bin/busybox_kobo": "a69a9f3326fb24d16a7fc4b08b41d42654031b6ea6028d00eccde081fe14eebc",
+    "bin/error.png": "e3e5a675e19261bf47e886190d9478ec2578cc9738f0bcca77ca5924abc69927",
+    "bin/fbink/CREDITS": "3ed6f9c7c4bdbd3eefa667008d29e622aad97b47a6c2b0a85fc855e81d07f2f9",
+    "bin/fbink/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "bin/fbink/README.md": "06177a0bb87826fe2ff4490a14fdd03ecc359b4ec31814dcb27d012614d4148f",
+    "bin/fbink/fbdepth": "5863e6a38e8e2a10b51630655b3e91bd8b10dcf883a3df333944f187e8ab1121",
+    "bin/fbink/fbink": "40574f15c1dc72b5f8e28b8fba4950550754b0eaa9c0555f288a1950ea22f77c",
+    "bin/fbink/finger_trace": "0a4f14c9465af813cd139cb5195e01c81dfb237a3e34db85003e49df1bfd2afd",
+    "bin/fbink/input_scan": "132c74fbb4b80f206ffa19152e0bd1ca82dd3c43bba7060da71623149e485bcf",
+    "bin/luajit": "dbcdf90fe5c1c26c7ff826c788d86dde7f7ef7d1ee0e4c8bae098302227c12c2",
+    "config.json": "0c4d7721343133fd42a2a1675d831c85cc3d65be5c332c998ae949b4c498dbc1",
+    "ffi/__gc.lua": "e01e633d113b15159f7322aef0e81f874df5a1642dbb0f0df91eeee181a98f2f",
+    "ffi/posix_h.lua": "0de3578307bb38464726d62ca6ce368b525d4d0d1c2637714e930146fe390e32",
+    "ffi/posix_types_64b_h.lua": "655667761e40a98aeb01d14140881ebca658675d9cb1233053c0b734d11025dc",
+    "ffi/posix_types_def_h.lua": "eb2248f1a837f108a930b19cbd2f9cb8fac1900b6a0d7f6ed8f1b1ff278b03b8",
+    "ffi/posix_types_x64_h.lua": "655667761e40a98aeb01d14140881ebca658675d9cb1233053c0b734d11025dc",
+    "ffi/posix_types_x86_h.lua": "eb2248f1a837f108a930b19cbd2f9cb8fac1900b6a0d7f6ed8f1b1ff278b03b8",
+    "lua/ntx_io.lua": "a53f4c6114f523c5af29b690c9f797fe60a8140a8b82cb21692aa4ec8e1ebc83",
+    "scripts/disable-wifi.sh": "4ea4a48555fa5665c1c2363e6ff97807993e318f3b0e9ea9abd5b2b0b26ab983",
+    "scripts/enable-wifi.sh": "1a4c7d048f0ba7abca8f9b284e87369ee929361153c12382083ba147a0dbde6b",
+    "scripts/getrssi.sh": "8318a34d8ba983455925e0062576fce0eb38cc12a92967b1459fcb74c3e7aa14",
+    "scripts/ledToggle.sh": "824ad6b3ee00143d2ff71923b014e724dba026dad8b4b357877b88baae3e3683",
+    "scripts/log.sh": "fa080a437e48893ac2149bacc7a08aa04cd652d4c8d98990dd15cfe88e72105d",
+    "scripts/obtain-ip.sh": "cabdec6cef96005bf7cfb0ade80052458cc1f2eb1338d5cc0f134938988bc769",
+    "scripts/release-ip.sh": "e32bfd3d305555f19c75be2ae94bc03dc38cee4fa3a64199709b1fe3d0d88701",
+    "scripts/restore-wifi-async.sh": "cdadda9831a7a1160ae2f84d6338254dadebeb345d94b2171e5b3f95d95bf73a",
+    "trmnl.sh": "2f5b95d63a8fbfab6e412ad06c94438f5dc1f690775a13b1d333df4f1bb1aad2",
+    "trmnlloop.sh": "b200ca978e542f233071662a96274310375cebd221cf4bc65fd5d48b6187a9bc"
+  }
+}

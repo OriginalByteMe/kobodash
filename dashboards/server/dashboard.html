@@ -1,0 +1,161 @@
+{#- Server: a homelab board. host (CPU, memory, load), docker (one square per container),
+    unraid (disks) and ntfy (alerts). Every source is optional; a panel with no data disappears
+    and the others spread out. unraid is only for Unraid servers, drop it from dashboard.json otherwise. -#}
+{% set host = src.get('host') %}{% set docker = src.get('docker') %}{% set unraid = src.get('unraid') %}{% set notes = src.get('ntfy') %}
+{% set k = screen.width / 1072 %}
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; font-src file:">
+<style>
+@font-face { font-family: Inter; src: url("{{ font_dir }}/InterVariable.ttf"); font-weight: 100 900; }
+@font-face { font-family: Symbols; src: url("{{ font_dir }}/MaterialSymbolsOutlined.ttf"); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { zoom: {{ k }}; background: #fff; }
+body { width: 1072px; height: {{ (screen.height / k)|round(1) }}px; overflow: hidden; background: #fff; color: #000;
+       font: 500 24px/1.25 Inter, sans-serif; font-feature-settings: "tnum", "cv11";
+       padding: 30px 44px 20px; display: flex; flex-direction: column; }
+.i { font-family: Symbols; font-weight: 400; line-height: 1; vertical-align: -0.15em; display: inline-block;
+     font-variation-settings: "FILL" 0, "wght" 600, "GRAD" 0, "opsz" 48; }
+.dim { color: #333; font-weight: 600; }
+.warn { font-weight: 800; text-decoration: underline; }
+.label { font-size: 18px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+
+header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 10px; }
+.day { font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.date { font-size: 28px; font-weight: 600; margin-top: 4px; }
+.status { text-align: right; font-size: 22px; font-weight: 600; line-height: 1.45; }
+
+main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+section { flex: 1 1 auto; border-top: 3px solid #000; padding: 10px 0 12px; display: flex; flex-direction: column; justify-content: center; }
+section.fill { flex: 99 1 0; min-height: 0; justify-content: flex-start; }
+h2 { font-size: 19px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 8px;
+     display: flex; justify-content: space-between; align-items: baseline; }
+h2 span { font-size: 20px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+
+.row { display: flex; }
+.row > div { flex: 1 1 0; min-width: 0; }
+.row > div + div { border-left: 2px solid #000; padding-left: 20px; margin-left: 20px; }
+.row + .row { margin-top: 10px; }
+.num { font-size: 80px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+.row.sm .num { font-size: 52px; }
+.num small { font-size: 32px; font-weight: 700; letter-spacing: 0; }
+.meter { height: 20px; border: 2px solid #000; margin: 4px 0; }
+.meter div { height: 100%; background: #000; }
+
+.grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 10px; max-height: 130px; overflow: hidden; }
+.sq { width: var(--s); height: var(--s); background: #000; position: relative; }
+.sq.bad::before { content: ""; position: absolute; inset: calc(var(--s) / 6); background: #fff; }
+.sq.bad::after { content: ""; position: absolute; inset: calc(var(--s) / 3); background: #000; }
+.sq.off { background: #fff; border: 3px solid #000; }
+.chips { display: flex; flex-direction: column; gap: 4px; font-size: 22px; }
+.chips span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.disks { display: grid; grid-auto-flow: column; grid-template-columns: 1fr 1fr; column-gap: 36px; row-gap: 8px; }
+.disk .top { display: flex; align-items: baseline; gap: 10px; font-size: 24px; }
+.disk .top b { font-weight: 800; }
+.disk .top .r { margin-left: auto; white-space: nowrap; }
+.disk .sub { font-size: 21px; white-space: nowrap; }
+
+.notes { flex: 1; min-height: 0; display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; overflow: hidden; }
+.note { width: 100%; display: grid; grid-template-columns: 118px 1fr; column-gap: 10px; padding: 6px 0; border-bottom: 2px solid #999; }
+.note .when { font-weight: 700; font-size: 22px; white-space: nowrap; }
+.note b { font-weight: 800; }
+.note .msg { font-size: 22px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.note.urgent .when { background: #000; color: #fff; padding: 0 8px; justify-self: start; align-self: start; }
+
+.empty { margin: auto; text-align: center; font-size: 46px; font-weight: 800; line-height: 1.3; }
+.empty div { font-size: 26px; font-weight: 600; }
+
+footer { border-top: 2px solid #000; padding-top: 8px; font-size: 19px; font-weight: 600; }
+footer > div { display: flex; justify-content: space-between; }
+.errs { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+</style></head>
+<body>
+
+<header>
+  <div><div class="day">Server</div><div class="date">{{ now.strftime('%a %-d %B') }}{% if host %} · up {{ host.uptime }}{% endif %}</div></div>
+  <div class="status">
+    Updated {{ now.strftime('%H:%M') }}<br>
+    {% if device.battery %}<span class="i">{{ 'battery_charging_full' if device.charging else 'battery_full' }}</span> {{ device.battery }}%{% endif %}
+  </div>
+</header>
+
+<main>
+{% if host %}
+<section>
+  <div class="row">
+    <div><div class="label">CPU</div><div class="num">{{ host.cpu|round|int }}<small>%</small></div><div class="meter"><div style="width: {{ host.cpu|round|int }}%"></div></div></div>
+    <div><div class="label">Memory</div><div class="num">{{ host.mem_pct|round|int }}<small>%</small></div><div class="meter"><div style="width: {{ host.mem_pct|round|int }}%"></div></div>
+      <div class="dim">{{ '%.1f'|format(host.mem_used) }} of {{ '%.0f'|format(host.mem_total) }} GB used</div></div>
+  </div>
+  <div class="row sm">
+    <div><div class="label">Load · {{ host.cores }} cores</div><div class="num">{{ host.load[0] }}</div><div class="dim">{{ host.load[1] }} · {{ host.load[2] }}</div></div>
+    {% if host.cpu_temp %}<div><div class="label">CPU temp</div><div class="num">{{ host.cpu_temp|round|int }}<small>°C</small></div></div>{% endif %}
+    <div><div class="label">Uptime</div><div class="num">{{ host.uptime }}</div></div>
+  </div>
+</section>
+{% endif %}
+
+{% if docker %}
+{% set total = [docker.total, 150]|min %}{% set bad = docker.unhealthy|length %}{% set off = docker.total - docker.running %}
+<section>
+  <h2>Containers <span>{{ docker.running }} of {{ docker.total }} running</span></h2>
+  <div class="grid" style="--s: {{ 30 if total <= 40 else 22 if total <= 90 else 16 }}px">
+    {%- for _ in range([docker.running - bad, 0]|max) %}<i class="sq"></i>{% endfor -%}
+    {%- for _ in range(bad) %}<i class="sq bad"></i>{% endfor -%}
+    {%- for _ in range([off, 0]|max) %}<i class="sq off"></i>{% endfor -%}
+  </div>
+  <div class="chips">
+    {% if docker.unhealthy %}<span><b class="warn">Unhealthy</b> {{ docker.unhealthy|join(', ') }}</span>{% endif %}
+    {% if docker.stopped %}<span><b>Stopped</b> {{ docker.stopped|join(', ') }}</span>{% endif %}
+    {% if not docker.unhealthy and not docker.stopped %}<span class="dim">All containers healthy</span>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if unraid %}
+<section>
+  <h2>Array <span>{{ unraid.array }} · {{ unraid.parity }}</span></h2>
+  {% set dl = (unraid.disks or [])[:12] %}
+  <div class="disks" style="grid-template-rows: repeat({{ [(dl|length / 2)|round(0, 'ceil')|int, 1]|max }}, auto)">
+    {% for d in dl %}
+    <div class="disk">
+      <div class="top"><b>{{ d.name }}</b><span class="dim">{{ d.type }}</span>
+        <span class="r"><span class="{{ 'warn' if d.temp and d.temp >= 55 else '' }}">{{ '%d°C'|format(d.temp) if d.temp is not none else 'standby' }}</span>
+          · <span class="{{ 'warn' if d.errors or d.status != 'OK' else '' }}">{{ d.status if d.status != 'OK' else (d.errors ~ ' err' if d.errors else 'OK') }}</span></span></div>
+      {% if d.used is not none %}
+      <div class="meter"><div style="width: {{ (100 * d.used)|round|int }}%"></div></div>
+      <div class="sub"><span class="{{ 'warn' if d.used >= 0.9 else '' }}">{{ (100 * d.used)|round|int }}% used</span> · {{ '%.2f TB'|format(d.free_tb) if d.free_tb >= 1 else '%d GB'|format(d.free_tb * 1024) }} free</div>
+      {% else %}<div class="sub dim">Protects the array · holds no files</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% if (unraid.disks or [])|length > 12 %}<div class="dim">+ {{ unraid.disks|length - 12 }} more disks not shown</div>{% endif %}
+</section>
+{% endif %}
+
+{% if notes is not none %}
+<section class="fill">
+  <h2>Notifications <span>last 24 h</span></h2>
+  <div class="notes">
+  {% for n in notes %}
+    <div class="note{{ ' urgent' if n.urgent else '' }}"><div class="when">{{ n.when }}</div>
+      <div><b>{{ n.title or n.topic }}</b>{% if n.title %} <span class="dim">· {{ n.topic }}</span>{% endif %}<div class="msg">{{ n.message }}</div></div></div>
+  {% else %}<div class="dim">Nothing in the last 24 hours</div>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not (host or docker or unraid or notes is not none) %}
+<div class="empty">No data yet<div>None of the sources in dashboard.json returned anything.<br>Check your .env settings.</div></div>
+{% endif %}
+</main>
+
+<footer>
+  {% if errors %}<div class="errs"><span class="i">error</span> {% for name, msg in errors.items() %}{{ name }}: {{ msg }}{{ ' · ' if not loop.last else '' }}{% endfor %}</div>{% endif %}
+  <div>
+    <span>{{ [device.id, ('Wi-Fi ' ~ device.rssi ~ ' dBm') if device.rssi else '', ('client ' ~ device.fw) if device.fw else '']|select|join(' · ') }}</span>
+    <span>Next refresh {{ next.strftime('%H:%M') }}</span>
+  </div>
+</footer>
+</body></html>

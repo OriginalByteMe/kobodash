@@ -1,0 +1,37 @@
+# `make serve` runs this. Settings come from .env (see .env.example).
+name: kobodash
+
+services:
+  kobodash:
+    build: .
+    image: kobodash:local
+    container_name: kobodash
+    restart: unless-stopped
+    ports:
+      - "8737:8737"
+    env_file:
+      - path: .env
+        required: false # without it the server says KOBODASH_TOKEN is not set
+    environment: # where things live inside the container; these override .env
+      DASHBOARDS_DIR: /app/dashboards
+      DEVICE_DIR: /app/device/client
+      FONT_DIR: /app/fonts
+      HOST_PROC: /host/proc
+      # DISKS_INI: /host/emhttp/disks.ini # Unraid only, with the emhttp volume below
+    volumes:
+      - ./dashboards:/app/dashboards:ro
+      - ./device/client:/app/device/client:ro
+      - /proc:/host/proc:ro # for the "host" source: this machine's CPU, memory and load
+      # - /var/local/emhttp:/host/emhttp:ro # Unraid only, for the "unraid" source
+    mem_limit: 768m
+    memswap_limit: 768m
+
+  # For the "docker" source: a read-only Docker API (GET /containers only). Uncomment, then in dashboard.json use
+  # {"docker": {"builtin": "docker", "url": "http://docker-proxy:2375"}}
+  # docker-proxy:
+  #   image: tecnativa/docker-socket-proxy:v0.5.0
+  #   restart: unless-stopped
+  #   environment:
+  #     CONTAINERS: 1
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro

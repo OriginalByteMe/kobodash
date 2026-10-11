@@ -1,0 +1,29 @@
+{
+  "weather": {
+    "now": {"temp": 21.4, "feels": 21.0, "humidity": 52, "wind": 11.0, "label": "Mainly clear", "icon": "partly_cloudy_day"},
+    "today": {"hi": 29.2, "lo": 15.8, "rain_p": 10, "rain_mm": 0.0, "name": "Tue", "label": "Mainly clear", "icon": "partly_cloudy_day",
+              "uv": 4.6, "uv_label": "Moderate", "sunrise": "06:48", "sunset": "18:21"},
+    "hours": [
+      {"hour": "09", "temp": 22.1, "rain_p": 0, "label": "Clear", "icon": "clear_day"},
+      {"hour": "10", "temp": 23.9, "rain_p": 0, "label": "Clear", "icon": "clear_day"},
+      {"hour": "11", "temp": 25.6, "rain_p": 5, "label": "Mainly clear", "icon": "partly_cloudy_day"},
+      {"hour": "12", "temp": 27.4, "rain_p": 5, "label": "Mainly clear", "icon": "partly_cloudy_day"},
+      {"hour": "13", "temp": 28.9, "rain_p": 10, "label": "Partly cloudy", "icon": "partly_cloudy_day"},
+      {"hour": "14", "temp": 29.2, "rain_p": 20, "label": "Overcast", "icon": "cloud"},
+      {"hour": "15", "temp": 27.8, "rain_p": 40, "label": "Light rain", "icon": "rainy_light"},
+      {"hour": "16", "temp": 25.3, "rain_p": 55, "label": "Rain", "icon": "rainy"}
+    ],
+    "days": [
+      {"hi": 24.1, "lo": 14.6, "rain_p": 60, "rain_mm": 4.2, "name": "Wed", "label": "Rain", "icon": "rainy"},
+      {"hi": 17.3, "lo": 9.4, "rain_p": 25, "rain_mm": 0.6, "name": "Thu", "label": "Partly cloudy", "icon": "partly_cloudy_day"},
+      {"hi": 8.7, "lo": 3.1, "rain_p": 10, "rain_mm": 0.0, "name": "Fri", "label": "Clear", "icon": "clear_day"}
+    ]
+  },
+  "air": {"aqi": 42, "label": "Good", "pm25": 9.6, "pm10": 15.2},
+  "ntfy": [
+    {"when": "08:31", "topic": "alerts", "title": "Container unhealthy: paperless-web", "message": "Health check failed 3 times in a row. Last output: connection refused on port 8000.", "urgent": true},
+    {"when": "03:15", "topic": "cron", "title": "Nightly backup finished", "message": "128 GB copied in 41 min, 0 errors.", "urgent": false},
+    {"when": "Mon 22:41", "topic": "uptime", "title": "", "message": "Router: WAN link restored after 42 s.", "urgent": false},
+    {"when": "Mon 18:05", "topic": "cron", "title": "Certificate renewed", "message": "example.com is valid for another 89 days.", "urgent": false}
+  ]
+}
