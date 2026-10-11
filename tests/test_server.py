@@ -148,6 +148,7 @@ class Dashboards(unittest.TestCase):
         self.assertEqual(self.html, "7|None|OSError: down|1|1072|my-kobo")
         self.assertEqual(refresh, 90)  # dashboard.json beats REFRESH
         self.assertIn(("http://x/ok", {"Authorization": "Bearer s3cret"}), self.fetched)
+        self.assertEqual(png, b"PNG")  # the screenshot goes to the Kobo as it is
 
     def test_sample_renders_without_the_network(self):
         k.DASHBOARD = "t"

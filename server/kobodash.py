@@ -496,7 +496,7 @@ def main() -> None:
         if args.preview:
             png, _ = render({"id": "preview", "battery": "87", "charging": False, "rssi": "-55", "fw": "preview"}, args.sample)
             Path(args.out).write_bytes(png)
-            return print(f"{args.out}: {SCREEN[0]}x{SCREEN[1]} {'color' if COLOR else 'grayscale'}, {len(png)} bytes")
+            return print(f"{args.out}: {SCREEN[0]}x{SCREEN[1]}{' colour screen' if COLOR else ''}, {len(png)} bytes")
     except (RuntimeError, OSError) as e:
         raise SystemExit(f"error: {e}")
     log(f"kobodash on :{E('PORT', '8737')} dashboard={DASHBOARD} client={CLIENT_VERSION}")
