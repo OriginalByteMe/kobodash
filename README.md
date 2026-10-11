@@ -71,7 +71,7 @@ The first picture is a normal computer render. The second is only a guess at how
 
 6. It downloads the pieces it needs and checks each one against a fixed fingerprint, then copies files to the Kobo and writes a `.env` file in this folder (if one already exists it asks before replacing it, and keeps a copy in `.cache/`). The `.env` holds a random token the Kobo and the server share, so keep it private.
 7. Eject the Kobo safely in your file manager (Eject in Finder on a Mac), then unplug the cable.
-8. The Kobo restarts by itself and installs everything. This takes about a minute.
+8. The Kobo should restart and install everything by itself, which takes about a minute. If it is still on its home screen after a minute, restart it: hold the power button, choose Power off, then switch it on again.
 9. Start the server:
 
    ```
@@ -106,10 +106,10 @@ After setup, the Kobo is a dashboard, not a normal e-reader, until you go back (
 
 Any of these works. None needs SSH or a computer, except the last.
 
-- **Power button.** Unplug the cable, because a Kobo on a charger never sleeps. Wait until it is asleep with the picture on screen, then press the power button once. The Kobo restarts into the normal Kobo, once. That takes up to a minute; if nothing happens, press it again. The button only counts if it wakes the Kobo more than 20 seconds before its next planned wake-up. Pressed in the last few seconds, it looks like a normal wake-up, so just try again after the next refresh. After the restart, plug it in and tap Connect as usual to work on it. (This one has not been tried on a real Kobo yet.)
+- **Power button.** Unplug the cable, because a Kobo on a charger never sleeps. Wait until it is asleep with the picture on screen, then press the power button once. The Kobo restarts into the normal Kobo, once. That takes up to a minute; if nothing happens, press it again. The button only counts if it wakes the Kobo more than 20 seconds before its next planned wake-up. Pressed in the last few seconds, it looks like a normal wake-up, so just try again after the next refresh. After the restart, plug it in and tap Connect as usual to work on it.
 - **Three failed starts.** If the Kobo starts three times in a row without ever drawing a picture (for example the server is off and the Wi-Fi is wrong), it gives up and stays in the normal Kobo. Once the problem is fixed, choose "Start dashboard" in NickelMenu to start again.
 - **A "disabled" file.** Connect the Kobo and create an empty file named `disabled` in `.adds/kobodash` on it. The Kobo stays normal until you delete that file.
-- **Remove it for good.** Connect the Kobo and run `make uninstall`. Type `yes`. Eject and unplug; the Kobo restarts by itself and removes the startup hook (and NickelMenu, if kobodash installed it). When its normal screen is back, connect it again and run `make uninstall` a second time to delete the leftover `.adds/kobodash` folder and the menu entry. kobo-stuff stays installed, which is harmless now that its servers are off. Your books and settings are not touched.
+- **Remove it for good.** Connect the Kobo and run `make uninstall`. Type `yes`. Eject and unplug; when the Kobo restarts it removes the startup hook (and NickelMenu, if kobodash installed it). If it does not restart within a minute, switch it off and on again. When its normal screen is back, connect it again and run `make uninstall` a second time to delete the leftover `.adds/kobodash` folder and the menu entry. kobo-stuff stays installed, which is harmless now that its servers are off. Your books and settings are not touched.
 
 A Kobo on a charger never sleeps: it stays awake with Wi-Fi on and refreshes on schedule. That is why the power button trick needs the cable unplugged. On battery it sleeps between refreshes.
 

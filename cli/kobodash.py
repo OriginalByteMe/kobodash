@@ -309,8 +309,8 @@ def confirm_changes(ctx: Ctx, info: Info, found: dict) -> None:
         Your books, reading settings and Kobo account are not touched. Any file I replace is first copied to
         {KOBODASH}/backup/.
 
-        When you eject the Kobo it restarts by itself to finish installing (about a minute). After that it shows the
-        dashboard and is no longer a normal e-reader. To get back to the normal Kobo:
+        After you eject and unplug it, the Kobo installs the next time it restarts (about a minute). After that it
+        shows the dashboard and is no longer a normal e-reader. To get back to the normal Kobo:
           - Press its power button while it is asleep and not charging. It restarts into the normal Kobo, once.
             (If nothing happens within a minute, press it again. Plug it in and tap Connect to work on it.)
           - Remove kobodash for good: connect the Kobo and run  make uninstall
@@ -608,7 +608,8 @@ def setup(ctx: Ctx) -> None:
 
         All done on the Kobo's side. Three steps left:
           1. Eject the Kobo safely (in your file manager, or Eject in Finder), then unplug the cable.
-          2. The Kobo restarts and installs everything by itself. This takes about a minute.
+          2. The Kobo should restart and install by itself. If it is still on its home screen after a minute,
+             restart it: hold the power button, choose Power off, then switch it on again.
           3. Start the dashboard server:  make serve
              Until it is running the Kobo shows an error picture. That is fine.
         """)
@@ -653,7 +654,7 @@ def uninstall(ctx: Ctx) -> None:
     ctx.say("Writing the removal request" + (" (dry run: nothing is really written)" if ctx.dry_run else "") + ":")
     kobo = KoboFiles(ctx, root)
     kobo.put(f"{KOBODASH}/uninstall", b"")
-    # An update file makes the Kobo restart by itself when it is ejected. It only holds an empty folder.
+    # An update file makes the Kobo restart when it is ejected, if it does that on its own. It only holds an empty folder.
     trigger = ctx.repo / ".cache" / "restart.tgz"
     trigger.parent.mkdir(parents=True, exist_ok=True)
     with tarfile.open(trigger, "w:gz") as tar:

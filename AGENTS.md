@@ -28,7 +28,7 @@ kobodash turns a Kobo e-reader into a wireless e-ink dashboard. `make setup` ins
    It writes nothing to the Kobo or to `.env`. It does download about 30 MB into `.cache/`. Add `--mount /path/to/Kobo` if the drive is not listed. Tell the person what it printed in plain words.
 4. Ask the person to run `make setup` in their own terminal and pick their Kobo from the list. You may explain each question. They read the warning and type `yes` themselves. Do not pipe answers into a real run.
 5. Setup writes `.env`. It asks where the server will run (the computer's LAN address, like `192.168.1.50:8737`), a name for the Kobo, latitude and longitude, a dashboard and whether to turn on SSH. SSH is optional and not needed.
-6. After setup the person ejects the Kobo safely and unplugs it. It restarts by itself and installs in about a minute.
+6. After setup the person ejects the Kobo safely and unplugs it. It installs on its next restart, about a minute. If it is still on its home screen after a minute, they restart it (hold power, Power off, switch on).
 7. Start the server with `make serve` (Docker), or `make serve-local` on a computer with Chromium. Both read `.env`. The server uses port 8737; the Kobo must be able to reach it.
 8. Wait for the Kobo's next refresh. The server log (`docker compose logs kobodash`, or the terminal for `make serve-local`) shows a `display id=...` line for every request. A `display refused` line means the token in `.env` does not match the Kobo's.
 
