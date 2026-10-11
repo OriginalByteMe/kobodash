@@ -29,6 +29,8 @@ header { display: flex; justify-content: space-between; align-items: flex-end; p
 .day { font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
 .date { font-size: 28px; font-weight: 600; margin-top: 4px; }
 .status { text-align: right; font-size: 22px; font-weight: 600; line-height: 1.45; }
+.clock { font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.clock small { font-size: 28px; font-weight: 700; letter-spacing: 0; }
 
 main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 section { flex: 1 1 auto; border-top: 3px solid #000; padding: 10px 0 12px; display: flex; flex-direction: column; justify-content: center; }
@@ -89,8 +91,8 @@ footer > div { display: flex; justify-content: space-between; }
 <header>
   <div><div class="day">{{ now.strftime('%A') }}</div><div class="date">{{ now.strftime('%-d %B %Y') }}</div></div>
   <div class="status">
-    Updated {{ now.strftime('%H:%M') }}<br>
-    {% if device.battery %}<span class="i">{{ 'battery_charging_full' if device.charging else 'battery_full' }}</span> {{ device.battery }}%{% endif %}
+    <div class="clock">{{ now.strftime('%-I:%M') }} <small>{{ now.strftime('%p') }}</small></div>
+    next {{ next.strftime('%-I:%M %p') }}{% if device.battery %} · <span class="i">{{ 'battery_charging_full' if device.charging else 'battery_full' }}</span> {{ device.battery }}%{% endif %}
   </div>
 </header>
 
@@ -175,7 +177,6 @@ footer > div { display: flex; justify-content: space-between; }
   {% if errors %}<div class="errs"><span class="i">error</span> {% for name, msg in errors.items() %}{{ name }}: {{ msg }}{{ ' · ' if not loop.last else '' }}{% endfor %}</div>{% endif %}
   <div>
     <span>{{ [device.id, ('Wi-Fi ' ~ device.rssi ~ ' dBm') if device.rssi else '', ('client ' ~ device.fw) if device.fw else '']|select|join(' · ') }}</span>
-    <span>Next refresh {{ next.strftime('%H:%M') }}</span>
   </div>
 </footer>
 </body></html>
