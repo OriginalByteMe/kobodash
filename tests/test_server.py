@@ -168,6 +168,18 @@ class Dashboards(unittest.TestCase):
         self.assertEqual(ctx["src"], dict.fromkeys("udnwa"))
         self.assertEqual((ctx["errors"], self.fetched), ({}, []))
 
+    def test_malaysian_index_reads_the_nearest_doe_station_with_a_reading(self):
+        station = lambda name, lat, api, cls: {"attributes": {
+            "STATION_LOCATION": f"{name}, SELANGOR", "LATITUDE": lat, "LONGITUDE": 101.6, "API": api, "CLASS": cls,
+            "DATETIME": 1791748800000}}  # 2026-10-11 20:00 local, stored as if UTC
+        doe = {"features": [station("NEAREST OFFLINE", 3.11, None, "N/A"), station("PETALING JAYA", 3.13, 70.0, "Moderate"),
+                            station("FAR", 3.5, 20.0, "Good")]}
+        meteo = {"current": {"us_aqi": 159, "pm2_5": 38.3, "pm10": 50.0}}
+        k.fetch = lambda url, *a, **kw: json.dumps(doe if "eqms.doe.gov.my" in url else meteo).encode()
+        self.assertEqual(k.air({"index": "malaysia", "lat": "3.1073", "lon": "101.6067"}, None),
+                         {"index": "API", "aqi": 70, "label": "Moderate", "station": "Petaling Jaya", "hour": "20:00",
+                          "pm25": 38.3, "pm10": 50.0})
+
     def test_url_source_keeps_its_last_good_value(self):
         spec = {"url": "http://x/c", "cache": 300}
         self.assertEqual(k.get_source("c", spec, None), {"n": 7})

@@ -47,6 +47,7 @@ TOKEN = E("KOBODASH_TOKEN", "")
 PUBLIC_URL = E("PUBLIC_URL", "http://127.0.0.1:8737").rstrip("/")
 TZ = ZoneInfo(E("TZ", "UTC"))
 LAT, LON = E("LAT", ""), E("LON", "")
+AQI_INDEX = E("AQI_INDEX", "us")  # us: US AQI from Open-Meteo; malaysia: DOE's Air Pollutant Index (API)
 REFRESH = int(E("REFRESH", "180"))
 # Signs client updates. Shared with the Kobo's config.json at install and never sent over the
 # wire (unlike the Access-Token header), so a LAN attacker cannot forge an update.
@@ -157,7 +158,30 @@ def weather(spec: dict, now: datetime) -> dict:
 
 def air(spec: dict, now: datetime) -> dict:
     a = open_meteo("air-quality-api.open-meteo.com", spec, current="us_aqi,pm2_5,pm10")["current"]
-    return {"aqi": a["us_aqi"], "label": aqi_label(a["us_aqi"]), "pm25": a["pm2_5"], "pm10": a["pm10"]}
+    out = {"index": "US AQI", "aqi": a["us_aqi"], "label": aqi_label(a["us_aqi"]), "pm25": a["pm2_5"], "pm10": a["pm10"]}
+    index = spec.get("index") or AQI_INDEX
+    if index == "malaysia":
+        out.update(doe_api(spec))
+    elif index != "us":
+        raise ValueError(f"unknown AQI_INDEX {index!r}, use us or malaysia")
+    return out
+
+
+APIMS = ("https://eqms.doe.gov.my/api3/publicmapproxy/PUBLIC_DISPLAY/CAQM_MCAQM_Current_Reading/MapServer/0/query"
+         "?f=json&outFields=*&returnGeometry=false&where=1%3D1")
+
+
+def doe_api(spec: dict) -> dict:
+    """Malaysia's API from the Department of Environment station nearest to LAT/LON that has a current reading."""
+    lat, lon = float(spec.get("lat") or LAT), float(spec.get("lon") or LON)
+    rows = [f["attributes"] for f in json.loads(fetch(APIMS))["features"] if f["attributes"].get("API") is not None]
+    if not rows:
+        raise RuntimeError("DOE APIMS returned no station readings")
+    s = min(rows, key=lambda r: (r["LATITUDE"] - lat) ** 2 + (r["LONGITUDE"] - lon) ** 2)
+    # DATETIME is the local reading time stored as if it were UTC, so it is read back in UTC
+    hour = datetime.fromtimestamp(s["DATETIME"] / 1000, ZoneInfo("UTC")).strftime("%H:%M")
+    return {"index": "API", "aqi": round(s["API"]), "label": s["CLASS"],
+            "station": s["STATION_LOCATION"].split(",")[0].title(), "hour": hour}
 
 
 # --- the host (/proc, hwmon) and Unraid --------------------------------------------

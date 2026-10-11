@@ -142,7 +142,7 @@ footer > div { display: flex; justify-content: space-between; }
 <section><div class="cells">
   {% if air %}
   <div class="{{ 'green' if air.aqi <= 50 else 'amber' if air.aqi <= 100 else 'red' }}">
-    <div class="label">Air quality · US AQI</div>
+    <div class="label">Air quality · {{ air.index }}{% if air.get('station') %} · {{ air.station }} {{ air.hour }}{% endif %}</div>
     <div class="num"><span class="big">{{ air.aqi }}</span><span>{{ air.label }}</span></div>
     <div class="meter"><i style="width: {{ [100 * air.aqi / 200, 100]|min|round|int }}%"></i></div>
     <div class="dim">PM2.5 {{ air.pm25|round|int }} · PM10 {{ air.pm10|round|int }} µg/m³</div>

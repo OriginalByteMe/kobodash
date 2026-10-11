@@ -117,7 +117,7 @@ footer > div { display: flex; justify-content: space-between; }
 {% if air or w %}
 <section class="air"><div class="cells">
   {% if air %}
-  <div><div class="label">Air quality</div><div class="big">{{ air.aqi }} <small>US AQI</small></div><div>{{ air.label }}</div></div>
+  <div><div class="label">Air quality</div><div class="big">{{ air.aqi }} <small>{{ air.index }}</small></div><div>{{ air.label }}</div>{% if air.get('station') %}<div class="dim">{{ air.station }} {{ air.hour }}</div>{% endif %}</div>
   <div><div class="label">PM2.5</div><div class="big">{{ air.pm25|round|int }}</div><div class="dim">µg/m³</div></div>
   <div><div class="label">PM10</div><div class="big">{{ air.pm10|round|int }}</div><div class="dim">µg/m³</div></div>
   {% endif %}

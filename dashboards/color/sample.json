@@ -19,7 +19,7 @@
       {"hi": 8.7, "lo": 3.1, "rain_p": 10, "rain_mm": 0.0, "name": "Fri", "label": "Clear", "icon": "clear_day"}
     ]
   },
-  "air": {"aqi": 42, "label": "Good", "pm25": 9.6, "pm10": 15.2},
+  "air": {"index": "US AQI", "aqi": 42, "label": "Good", "pm25": 9.6, "pm10": 15.2},
   "ntfy": [
     {"when": "08:31", "topic": "alerts", "title": "Container unhealthy: paperless-web", "message": "Health check failed 3 times in a row. Last output: connection refused on port 8000.", "urgent": true},
     {"when": "03:15", "topic": "cron", "title": "Nightly backup finished", "message": "128 GB copied in 41 min, 0 errors.", "urgent": false},

@@ -19,7 +19,7 @@
       {"hi": 20.4, "lo": 8.7, "rain_p": 5, "rain_mm": 0.0, "name": "Fri", "label": "Clear", "icon": "clear_day"}
     ]
   },
-  "air": {"aqi": 58, "label": "Moderate", "pm25": 14.2, "pm10": 22.8},
+  "air": {"index": "US AQI", "aqi": 58, "label": "Moderate", "pm25": 14.2, "pm10": 22.8},
   "host": {"cpu": 12.4, "cpu_temp": 48.0, "cores": 8, "load": ["0.82", "0.64", "0.58"], "uptime": "12d 4h", "mem_used": 9.8, "mem_total": 32.0, "mem_pct": 30.6},
   "unraid": {
     "array": "Started",

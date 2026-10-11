@@ -143,7 +143,7 @@ Each entry under `sources` becomes `src.<name>` in your HTML. A source is either
 | Source | What you get |
 | --- | --- |
 | `{"builtin": "weather"}` | Current weather, today, the next hours and days, from Open-Meteo. Uses `LAT` and `LON` (or `"lat"` and `"lon"` in the source). |
-| `{"builtin": "air"}` | Air quality: `aqi`, `label`, `pm25`, `pm10`. Same location. |
+| `{"builtin": "air"}` | Air quality: `index`, `aqi`, `label`, `pm25`, `pm10`. Same location. With `AQI_INDEX=malaysia` (or `"index": "malaysia"` in the source) the number is Malaysia's Air Pollutant Index from the nearest Department of Environment station, and `station` and `hour` say which reading it is. |
 | `{"builtin": "host"}` | The server's CPU, temperature, load, uptime and memory. |
 | `{"builtin": "unraid"}` | Array, parity and disk status. Unraid only. |
 | `{"builtin": "docker", "url": "..."}` | Containers running, stopped, unhealthy. Needs a Docker API at `url` (see `docker-compose.yml` for a read-only one). |
@@ -250,6 +250,7 @@ Set `DASHBOARD=url` and `DASHBOARD_URL` to the page you want, for example your H
 | `PUBLIC_URL` | How the Kobo reaches the server, like `http://192.168.1.50:8737`. |
 | `TZ` | Your time zone, like `Europe/London`. |
 | `LAT`, `LON` | Where you are, for weather and air quality. |
+| `AQI_INDEX` | `us` (default) for the US AQI, or `malaysia` for Malaysia's Air Pollutant Index (API) from the Department of Environment. |
 | `REFRESH` | Seconds between updates. Default 180. A `refresh` in `dashboard.json` wins. |
 | `SCREEN`, `COLOR` | Screen size, like `1072x1448`, and `0` for a black-and-white screen or `1` for colour. Setup fills these in from your model. |
 
