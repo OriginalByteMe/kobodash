@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -391,14 +392,11 @@ class DeviceScripts(unittest.TestCase):
         (fake / "sys/class/power_supply" / battery).mkdir(parents=True)
         (fake / "sys/class/power_supply" / battery / "status").write_text(status + "\n")
 
-    def run_autostart(self, client, fake, timeout=30):
-        return subprocess.run(["sh", str(client / "autostart.sh")], env={**os.environ, "KOBODASH_ROOT": str(fake)},
-                              capture_output=True, text=True, timeout=timeout)
-
     def boot(self, files=(), marker=False, keys=False):
         """Run autostart.sh as the Kobo would at boot, in a sandbox: returns (client dir, fake root)."""
         client, fake = self.sandbox(files, marker, keys)
-        done = self.run_autostart(client, fake)
+        done = subprocess.run(["sh", str(client / "autostart.sh")], env={**os.environ, "KOBODASH_ROOT": str(fake)},
+                              capture_output=True, text=True, timeout=30)
         self.assertEqual((done.returncode, done.stderr), (0, ""))
         return client, fake
 
@@ -418,20 +416,23 @@ class DeviceScripts(unittest.TestCase):
                                       env={**os.environ, "KOBODASH_ROOT": str(fake)}, capture_output=True, text=True)
                 self.assertEqual((done.returncode, done.stderr), (expected, ""))
 
-    def test_after_a_computer_the_dashboard_starts_again_once_unplugged(self):
-        # bootcount at 3 makes the second pass stop and say so, which shows the start path ran again
-        client, _ = self.boot(["nickel-once", "bootcount"])
-        self.assertFalse((client / "nickel-once").exists())
+    def test_after_a_computer_nickel_keeps_the_screen_until_it_is_unplugged(self):
+        # bootcount at 3 makes the dashboard's start stop and say so, which shows it ran again
+        client, fake = self.sandbox(["nickel-once", "bootcount"])
+        run = subprocess.Popen(["sh", str(client / "autostart.sh")], env={**os.environ, "KOBODASH_ROOT": str(fake)},
+                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        self.addCleanup(run.kill)
+        time.sleep(2)
+        self.assertIsNone(run.poll())  # early in boot the kernel has not named the cable yet
+        self.cable(fake, "usb_host", "battery", "Charging")
+        time.sleep(2)
+        self.assertIsNone(run.poll())
+        (fake / "sys/class/power_supply/battery/status").write_text("Discharging\n")
+        self.assertEqual(run.wait(timeout=15), 0)
+        self.assertEqual(run.stderr.read(), "")
         log = (client / "debug.log").read_text()
         self.assertIn("plugged into a computer", log)
         self.assertIn("3 boots without asking the server", log)
-
-    def test_nickel_keeps_the_screen_while_a_computer_is_plugged_in(self):
-        client, fake = self.sandbox(["nickel-once"])
-        self.cable(fake, "usb_host", "battery", "Charging")
-        with self.assertRaises(subprocess.TimeoutExpired):
-            self.run_autostart(client, fake, timeout=3)
-        self.assertFalse((client / "bootcount").exists())  # the dashboard never started
 
     def test_uninstall_flag_removes_the_hook(self):
         client, fake = self.boot(["uninstall"], marker=True)
