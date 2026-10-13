@@ -4,10 +4,10 @@
 # opted in), stay in Nickel when told to, then hand the screen from Nickel to trmnl.sh.
 #
 # Ways back to the normal Kobo, none of which need SSH:
-#   - power button while the Kobo is asleep on battery: trmnlloop.sh writes `nickel-once` and
-#     reboots; the next boot (this script) deletes the file and stays in Nickel, just once.
+#   - plug it into a computer: trmnlloop.sh writes `nickel-once` and reboots; the next boot (this script)
+#     leaves the screen to Nickel, which asks to connect, and starts the dashboard again once unplugged.
 #   - an empty file named `disabled` next to this script keeps the Kobo in Nickel until removed.
-#   - three boots in a row that never reach a render (bootcount) also stay in Nickel.
+#   - three boots in a row where the client dies before asking the server (bootcount) also stay in Nickel.
 #   - `make uninstall` writes `uninstall`, see below.
 cd "$(dirname "$0")" || exit 1
 R=${KOBODASH_ROOT:-} # only the tests set this: a prefix for every absolute path below
@@ -37,14 +37,16 @@ fi
 
 if [ -e nickel-once ]; then
     rm -f nickel-once
-    echo "$(date) autostart: power button pressed, staying in Nickel for this boot" >>debug.log
-    exit 0
+    echo "$(date) autostart: plugged into a computer, Nickel has the screen until it is unplugged" >>debug.log
+    dir=$PWD
+    mkdir -p "$R/tmp/kobodash" && cp -f scripts/computer.sh scripts/wait-unplug.sh "$R/tmp/kobodash/" || exit 1
+    cd / && exec /bin/sh "$R/tmp/kobodash/wait-unplug.sh" "$dir"
 fi
 [ -e disabled ] && exit 0
-# Three boots in a row that never reach a render (trmnlloop.sh deletes bootcount) fall back to Nickel.
+# Three boots in a row where the client dies before asking the server (trmnlloop.sh deletes bootcount) fall back to Nickel.
 n=$(cat bootcount 2>/dev/null || echo 0)
 if [ "$n" -ge 3 ]; then
-    echo "$(date) autostart: $n boots without a render, staying in Nickel (rm bootcount to retry)" >>debug.log
+    echo "$(date) autostart: $n boots without asking the server, staying in Nickel (rm bootcount to retry)" >>debug.log
     exit 0
 fi
 echo $((n + 1)) >bootcount

@@ -41,7 +41,7 @@ The first picture is a normal computer render. The second is only a guess at how
 
 ## Quick start
 
-1. Plug the Kobo into your computer with its USB cable. On the Kobo's screen, tap **Connect**. Wait until your computer shows it as a drive. If the Kobo is already showing a dashboard, press its power button once first and wait for its normal screen.
+1. Plug the Kobo into your computer with its USB cable. On the Kobo's screen, tap **Connect**. Wait until your computer shows it as a drive. If the Kobo is already showing a dashboard, plugging it in makes it restart into its normal screen, which then asks to connect. That takes about a minute.
 2. In this folder, run:
 
    ```
@@ -104,14 +104,14 @@ After setup, the Kobo is a dashboard, not a normal e-reader, until you go back (
 
 ## Getting back to the normal Kobo
 
-Any of these works. None needs SSH or a computer, except the last.
+Any of these works, and none needs SSH.
 
-- **Power button.** Unplug the cable, because a Kobo on a charger never sleeps. Wait until it is asleep with the picture on screen, then press the power button once. The Kobo restarts into the normal Kobo, once. That takes up to a minute; if nothing happens, press it again. The button only counts if it wakes the Kobo more than 20 seconds before its next planned wake-up. Pressed in the last few seconds, it looks like a normal wake-up, so just try again after the next refresh. After the restart, plug it in and tap Connect as usual to work on it.
-- **Three failed starts.** If the Kobo starts three times in a row without ever drawing a picture (for example the server is off and the Wi-Fi is wrong), it gives up and stays in the normal Kobo. Once the problem is fixed, choose "Start dashboard" in NickelMenu to start again.
+- **Plug it into a computer.** Within about a minute the Kobo restarts into the normal Kobo and asks to connect. Tap **Connect** to work on its files. When you unplug it, the dashboard starts again by itself. A wall charger does not do this; the Kobo just charges.
+- **Three failed starts.** If the Kobo starts three times in a row and its program stops before it even asks the server (for example after a broken update), it gives up and stays in the normal Kobo. A server that is off or a wrong Wi-Fi password does not count: the Kobo shows its error picture and keeps trying. Once the problem is fixed, choose "Start dashboard" in NickelMenu to start again.
 - **A "disabled" file.** Connect the Kobo and create an empty file named `disabled` in `.adds/kobodash` on it. The Kobo stays normal until you delete that file.
 - **Remove it for good.** Connect the Kobo and run `make uninstall`. Type `yes`. Eject and unplug; when the Kobo restarts it removes the startup hook (and NickelMenu, if kobodash installed it). If it does not restart within a minute, switch it off and on again. When its normal screen is back, connect it again and run `make uninstall` a second time to delete the leftover `.adds/kobodash` folder and the menu entry. kobo-stuff stays installed, which is harmless now that its servers are off. Your books and settings are not touched.
 
-A Kobo on a charger never sleeps: it stays awake with Wi-Fi on and refreshes on schedule. That is why the power button trick needs the cable unplugged. On battery it sleeps between refreshes.
+A Kobo on a charger never sleeps: it stays awake with Wi-Fi on and refreshes on schedule. On battery it sleeps between refreshes. While the dashboard runs, the touchscreen does nothing and the power button only wakes the Kobo for an early refresh.
 
 ## Make your own dashboard
 

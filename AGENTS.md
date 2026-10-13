@@ -18,7 +18,7 @@ kobodash turns a Kobo e-reader into a wireless e-ink dashboard. `make setup` ins
 ## Setting up
 
 1. Check the computer has Python 3.9 or newer, `make`, and either Docker or Chromium. Linux and macOS only.
-2. Ask the person to plug the Kobo into the computer with its USB cable and tap **Connect** on the Kobo's screen. If the Kobo is already showing a dashboard, they press its power button once first and wait for its normal screen.
+2. Ask the person to plug the Kobo into the computer with its USB cable and tap **Connect** on the Kobo's screen. If the Kobo is already showing a dashboard, plugging it in makes it restart into its normal screen, which asks to connect after about a minute.
 3. Show what setup will do before anything is written. Run:
 
    ```
@@ -48,8 +48,8 @@ If the person wants a different model, or setup refuses it, report the reason it
 
 Give the least invasive option that fits.
 
-1. Power button: unplug the cable (a Kobo on a charger never sleeps), wait until it is asleep, press the power button once. It restarts into the normal Kobo, once. If nothing happens in a minute, press again.
-2. Three failed starts in a row make the Kobo stay normal by itself. NickelMenu's "Start dashboard" starts it again.
+1. Plug into a computer: within about a minute it restarts into the normal Kobo, which asks to connect. Unplugged, the dashboard comes back by itself.
+2. Three starts in a row where the Kobo's program stops before it asks the server make the Kobo stay normal by itself. NickelMenu's "Start dashboard" starts it again.
 3. A file named `disabled` in `.adds/kobodash` on the Kobo keeps it normal. Tell the person how to make it. Do not make it yourself unless they ask.
 4. To remove kobodash, the person runs `make uninstall`, types `yes`, ejects and unplugs. The Kobo restarts and removes the startup hook. When its normal screen is back they connect it and run `make uninstall` a second time to delete `.adds/kobodash`. You may explain the steps. Do not type their confirmation.
 

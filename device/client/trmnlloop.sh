@@ -1,7 +1,18 @@
 #!/bin/sh
 # One refresh of the dashboard: wake Wi-Fi, ask the server for the picture, draw it, sleep.
 # Derived from usetrmnl/trmnl-kobo (MIT, see LICENSE.trmnl); changes: Battery-Percent and Charging
-# headers, signed over-the-air updates, no suspend while charging, power-button escape hatch.
+# headers, signed over-the-air updates, no suspend while charging, hands over to Nickel on a computer.
+
+# Plugged into a computer: reboot into Nickel, which asks to connect. autostart.sh starts the
+# dashboard again once the cable is out. Touches and the power button do nothing here.
+if ./scripts/computer.sh; then
+    ./scripts/log.sh "plugged into a computer, rebooting into the normal Kobo so it can connect"
+    touch nickel-once
+    cp /tmp/debug.log debug.log
+    sync
+    reboot
+    exit 0
+fi
 
 ./scripts/ledToggle.sh 8 >>/tmp/debug.log 2>&1
 
@@ -60,6 +71,7 @@ curl "${trmnl_apiurl}/display" -L \
     -H "FW-Version: ${trmnl_firmware_version}" \
     -o /tmp/trmnl.json >>/tmp/debug.log 2>&1
 curl_status=$?
+rm -f bootcount # this boot got as far as asking the server; autostart.sh counts the boots that never do
 
 json_content=$(cat /tmp/trmnl.json)
 ./scripts/log.sh "TRMNL api display returned $curl_status with ${json_content}"
@@ -91,7 +103,6 @@ else
         # rotate back to portrait mode
         ./bin/fbink/fbdepth -r -1
 
-        rm -f bootcount # this boot reached a render; autostart.sh counts the boots that never do
         if [ "$(jq -r '.update_firmware' /tmp/trmnl.json)" = "true" ] && ./scripts/update.sh /tmp/trmnl.json >>/tmp/debug.log 2>&1; then
             cp /tmp/debug.log debug.log
             reboot
@@ -102,7 +113,11 @@ else
         refresh_rate=$(jq -r '.refresh_rate // 180' /tmp/trmnl.json)
         if [ "$charging" = 1 ]; then
             ./scripts/log.sh "charging: staying awake for ${refresh_rate}s"
-            sleep "$refresh_rate"
+            i=0 # check for a computer meanwhile; the next pass hands over
+            while [ $i -lt "$refresh_rate" ] && ! ./scripts/computer.sh; do
+                sleep 5
+                i=$((i + 5))
+            done
             exit 0
         fi
 
@@ -137,7 +152,6 @@ else
         # Check if the elapsed time is greater than 10 seconds
         if [ "$elapsed_time_in_rtcwake" -gt 10 ]; then
             ./scripts/log.sh "rtcwake took more than 10 seconds, skipping suspend to mem in power state"
-            slept=1
         else
             ./scripts/log.sh  "rtcwake took ${elapsed_time_in_rtcwake}, writing suspend to mem in power state"
             ./scripts/ledToggle.sh 0  >>/tmp/debug.log 2>&1
@@ -146,7 +160,6 @@ else
             sleep 2s
             echo mem >/sys/power/state
             suspend_status=$?
-            [ $suspend_status -eq 0 ] && slept=1
             if [ $suspend_status -eq 0 ]; then
                 ./scripts/log.sh "Suspend to mem ok"
             else
@@ -160,25 +173,6 @@ else
             else
                 ./scripts/log.sh "Disable suspend state failed"
             fi
-        fi
-
-        # Escape hatch: the alarm wakes us about ${refresh_rate}s after rtcwake started. Waking
-        # more than 20s before that, off a charger, is the power button (a charger being
-        # plugged in also wakes the Kobo early, hence the check). Either suspend path counts:
-        # rtcwake sleeping itself, or the echo mem fallback. Reboot into the normal Kobo
-        # for this one boot: autostart.sh deletes nickel-once and stays in Nickel.
-        woke_after=$(($(date +%s) - start_time))
-        on_charger=0
-        case "$(cat /sys/class/power_supply/mc13892_bat/status /sys/class/power_supply/battery/status 2>/dev/null)" in
-            *Charging* | *Full*) on_charger=1 ;;
-        esac
-        if [ "${slept:-0}" = 1 ] && [ "$on_charger" = 0 ] && [ "$woke_after" -lt $((refresh_rate - 20)) ]; then
-            ./scripts/log.sh "woke after ${woke_after}s of ${refresh_rate}s: power button, rebooting into the normal Kobo once"
-            touch nickel-once
-            cp /tmp/debug.log debug.log
-            sync
-            reboot
-            exit 0
         fi
     fi
 fi

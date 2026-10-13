@@ -227,7 +227,7 @@ def pick_kobo(ctx: Ctx):
                   1. Plug it into this computer with its USB cable.
                   2. On the Kobo's screen, tap "Connect" (it may say "Connect to computer").
                   3. Wait a few seconds until your computer shows the Kobo as a drive, then run this again.
-                If your Kobo is already showing a dashboard, press its power button once first and wait for its normal screen.
+                If your Kobo is already showing a dashboard, plugging it in makes it restart into its normal screen, which then asks to connect.
                 If your computer shows the Kobo somewhere unusual, run:  python3 cli/kobodash.py setup --mount /path/to/the/Kobo""")
             if unmounted:
                 ctx.say(f"I can see a drive that is not opened yet ({', '.join(unmounted)}). Open it in your file manager first.")
@@ -311,8 +311,8 @@ def confirm_changes(ctx: Ctx, info: Info, found: dict) -> None:
 
         After you eject and unplug it, the Kobo installs the next time it restarts (about a minute). After that it
         shows the dashboard and is no longer a normal e-reader. To get back to the normal Kobo:
-          - Press its power button while it is asleep and not charging. It restarts into the normal Kobo, once.
-            (If nothing happens within a minute, press it again. Plug it in and tap Connect to work on it.)
+          - Plug it into a computer. Within about a minute it restarts into the normal Kobo and asks to connect.
+            Unplug it and the dashboard comes back.
           - Remove kobodash for good: connect the Kobo and run  make uninstall
           - Or keep it normal: create an empty file named "disabled" in the {KOBODASH} folder on the Kobo.
         """)

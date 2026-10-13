@@ -364,8 +364,8 @@ class DeviceScripts(unittest.TestCase):
             with self.subTest(script.relative_to(ROOT).as_posix()):
                 self.assertEqual(subprocess.run(["sh", "-n", str(script)], capture_output=True, text=True).stderr, "")
 
-    def boot(self, files=(), marker=False, keys=False):
-        """Run autostart.sh as the Kobo would at boot, in a sandbox: returns (client dir, fake root)."""
+    def sandbox(self, files=(), marker=False, keys=False):
+        """A copy of the client and a fake Kobo root for autostart.sh: returns (client dir, fake root)."""
         tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
         client, fake = tmp / "client", tmp / "root"
@@ -382,10 +382,56 @@ class DeviceScripts(unittest.TestCase):
         stub = fake / "usr/bin/dropbear"
         stub.write_text('#!/bin/sh\necho "$@" > "$0.args"\n')
         stub.chmod(0o755)
-        done = subprocess.run(["sh", str(client / "autostart.sh")], env={**os.environ, "KOBODASH_ROOT": str(fake)},
-                              capture_output=True, text=True, timeout=30)
+        return client, fake
+
+    @staticmethod
+    def cable(fake, device, battery, status):
+        """The cable as the kernel and the battery report it: usb_host (computer) or usb_plug (charger)."""
+        (fake / "sys/devices/platform" / device).mkdir(parents=True)
+        (fake / "sys/class/power_supply" / battery).mkdir(parents=True)
+        (fake / "sys/class/power_supply" / battery / "status").write_text(status + "\n")
+
+    def run_autostart(self, client, fake, timeout=30):
+        return subprocess.run(["sh", str(client / "autostart.sh")], env={**os.environ, "KOBODASH_ROOT": str(fake)},
+                              capture_output=True, text=True, timeout=timeout)
+
+    def boot(self, files=(), marker=False, keys=False):
+        """Run autostart.sh as the Kobo would at boot, in a sandbox: returns (client dir, fake root)."""
+        client, fake = self.sandbox(files, marker, keys)
+        done = self.run_autostart(client, fake)
         self.assertEqual((done.returncode, done.stderr), (0, ""))
         return client, fake
+
+    def test_a_computer_is_a_usb_host_with_the_battery_on_power(self):
+        for device, battery, status, expected in [
+            ("usb_host", "battery", "Charging", 0),
+            ("usb_host", "battery", "Full", 0),
+            ("usb_host", "mc13892_bat", "Charging", 0),  # older Kobos
+            ("usb_host", "battery", "Discharging", 1),   # the kernel keeps the name after unplugging
+            ("usb_plug", "battery", "Charging", 1),      # a wall charger
+        ]:
+            with self.subTest(device=device, battery=battery, status=status):
+                fake = Path(tempfile.mkdtemp())
+                self.addCleanup(shutil.rmtree, fake, ignore_errors=True)
+                self.cable(fake, device, battery, status)
+                done = subprocess.run(["sh", str(ROOT / "device/client/scripts/computer.sh")],
+                                      env={**os.environ, "KOBODASH_ROOT": str(fake)}, capture_output=True, text=True)
+                self.assertEqual((done.returncode, done.stderr), (expected, ""))
+
+    def test_after_a_computer_the_dashboard_starts_again_once_unplugged(self):
+        # bootcount at 3 makes the second pass stop and say so, which shows the start path ran again
+        client, _ = self.boot(["nickel-once", "bootcount"])
+        self.assertFalse((client / "nickel-once").exists())
+        log = (client / "debug.log").read_text()
+        self.assertIn("plugged into a computer", log)
+        self.assertIn("3 boots without asking the server", log)
+
+    def test_nickel_keeps_the_screen_while_a_computer_is_plugged_in(self):
+        client, fake = self.sandbox(["nickel-once"])
+        self.cable(fake, "usb_host", "battery", "Charging")
+        with self.assertRaises(subprocess.TimeoutExpired):
+            self.run_autostart(client, fake, timeout=3)
+        self.assertFalse((client / "bootcount").exists())  # the dashboard never started
 
     def test_uninstall_flag_removes_the_hook(self):
         client, fake = self.boot(["uninstall"], marker=True)
@@ -400,17 +446,12 @@ class DeviceScripts(unittest.TestCase):
         self.assertFalse((fake / "mnt/onboard/.adds/nm/uninstall").exists())
         self.assertFalse((fake / "usr/local/kobodash").exists())
 
-    def test_power_button_flag_is_consumed_once_and_stays_in_nickel(self):
-        client, _ = self.boot(["nickel-once"])
-        self.assertFalse((client / "nickel-once").exists())
-        self.assertFalse((client / "bootcount").exists())  # it never got as far as starting the dashboard
-
     def test_disabled_file_and_three_failed_boots_stay_in_nickel(self):
         client, _ = self.boot(["disabled"])
         self.assertFalse((client / "bootcount").exists())
         client, _ = self.boot(["bootcount"])
         self.assertEqual((client / "bootcount").read_text(), "3")
-        self.assertIn("3 boots without a render", (client / "debug.log").read_text())
+        self.assertIn("3 boots without asking the server", (client / "debug.log").read_text())
 
     def test_open_servers_stay_off_and_ssh_runs_only_with_a_key(self):
         for keys in (False, True):
