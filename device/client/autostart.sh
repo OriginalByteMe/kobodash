@@ -35,12 +35,17 @@ if [ -s "$USBNET/authorized_keys" ] && [ ! -e "$R/tmp/kobodash-dropbear.pid" ]; 
     "$R/usr/bin/dropbear" -s -R -p 22 -P "$R/tmp/kobodash-dropbear.pid"
 fi
 
-if [ -e nickel-once ]; then
-    rm -f nickel-once
-    echo "$(date) autostart: plugged into a computer, Nickel has the screen until it is unplugged" >>debug.log
+# Nickel keeps the screen while a computer is plugged in, and asks to connect. The wait runs from /tmp:
+# connecting hands this partition to the computer. wait-unplug.sh comes back here once the cable is out.
+hand_to_nickel() {
     dir=$PWD
     mkdir -p "$R/tmp/kobodash" && cp -f scripts/computer.sh scripts/wait-unplug.sh "$R/tmp/kobodash/" || exit 1
     cd / && exec /bin/sh "$R/tmp/kobodash/wait-unplug.sh" "$dir"
+}
+if [ -e nickel-once ]; then
+    rm -f nickel-once
+    echo "$(date) autostart: plugged into a computer, Nickel has the screen until it is unplugged" >>debug.log
+    hand_to_nickel
 fi
 [ -e disabled ] && exit 0
 # Three boots in a row where the client dies before asking the server (trmnlloop.sh deletes bootcount) fall back to Nickel.
@@ -49,7 +54,6 @@ if [ "$n" -ge 3 ]; then
     echo "$(date) autostart: $n boots without asking the server, staying in Nickel (rm bootcount to retry)" >>debug.log
     exit 0
 fi
-echo $((n + 1)) >bootcount
 
 # trmnl.sh tears Nickel down itself and reuses its environment, so wait until Nickel is up.
 i=0
@@ -58,4 +62,7 @@ until pkill -0 nickel || [ $i -ge 90 ]; do
     i=$((i + 1))
 done
 sleep 15
+# Plugged in meanwhile, or started on a computer: Nickel may already be connected, so do not kill it.
+/bin/sh scripts/computer.sh && hand_to_nickel
+echo $((n + 1)) >bootcount
 exec /bin/sh ./trmnl.sh
