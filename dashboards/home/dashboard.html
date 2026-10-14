@@ -24,6 +24,8 @@ body { width: 1072px; height: {{ (screen.height / k)|round(1) }}px; overflow: hi
 .label { font-size: 18px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .big { font-size: 48px; font-weight: 800; line-height: 1.05; }
 .big small { font-size: 22px; font-weight: 600; }
+.face { font-family: "Noto Color Emoji"; font-weight: 400; }
+.title { font-size: 34px; font-weight: 800; text-align: center; padding-bottom: 12px; }
 
 header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 10px; }
 .day { font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
@@ -88,6 +90,7 @@ footer > div { display: flex; justify-content: space-between; }
 </style></head>
 <body>
 
+{% if title %}<div class="title">{{ title }}</div>{% endif %}
 <header>
   <div><div class="day">{{ now.strftime('%A') }}</div><div class="date">{{ now.strftime('%-d %B %Y') }}</div></div>
   <div class="status">
@@ -119,7 +122,9 @@ footer > div { display: flex; justify-content: space-between; }
 {% if air or w %}
 <section class="air"><div class="cells">
   {% if air %}
-  <div><div class="label">Air quality</div><div class="big">{{ air.aqi }} <small>{{ air.index }}</small></div><div>{{ air.label }}</div>{% if air.get('station') %}<div class="dim">{{ air.station }} {{ air.hour }}</div>{% endif %}</div>
+  {#- Face by index number; above 100 it is a mask, 160 a skull, 200 a coffin, all saying stay in. #}
+  {% set face = '⚰️' if air.aqi >= 200 else '💀' if air.aqi > 160 else '😷' if air.aqi > 100 else '🙂' if air.aqi > 50 else '😄' %}
+  <div><div class="label">Air quality</div><div class="big">{{ air.aqi }} <small>{{ air.index }}</small> <span class="face">{{ face }}</span></div><div>{{ air.label }}{% if air.aqi > 100 %} · <b>Don't go outside</b>{% endif %}</div>{% if air.get('station') %}<div class="dim">{{ air.station }} {{ air.hour }}</div>{% endif %}</div>
   <div><div class="label">PM2.5</div><div class="big">{{ air.pm25|round|int }}</div><div class="dim">µg/m³</div></div>
   <div><div class="label">PM10</div><div class="big">{{ air.pm10|round|int }}</div><div class="dim">µg/m³</div></div>
   {% endif %}

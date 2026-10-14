@@ -341,7 +341,7 @@ def get_source(name: str, spec: dict, now: datetime):
 
 
 def context(dash: str, cfg: dict, device: dict, sample: bool) -> dict:
-    """What the template sees: src (name -> data or None), errors (name -> message), times, device, screen."""
+    """What the template sees: src (name -> data or None), errors (name -> message), times, device, screen, title."""
     now = datetime.now(TZ)
     sources = cfg.get("sources", {})
     samples = json.loads((DASHBOARDS_DIR / dash / "sample.json").read_text(encoding="utf-8")) if sample else {}
@@ -361,7 +361,8 @@ def context(dash: str, cfg: dict, device: dict, sample: bool) -> dict:
         results = list(pool.map(one, sources.items()))
     return {"src": {n: v for n, v, _ in results}, "errors": {n: e for n, _, e in results if e},
             "now": now, "next": now + timedelta(seconds=cfg.get("refresh", REFRESH)), "device": device,
-            "screen": {"width": SCREEN[0], "height": SCREEN[1], "color": COLOR}, "font_dir": FONT_DIR.as_uri()}
+            "screen": {"width": SCREEN[0], "height": SCREEN[1], "color": COLOR}, "font_dir": FONT_DIR.as_uri(),
+            "title": E("TITLE", "")}
 
 
 # --- fonts ---------------------------------------------------------------------

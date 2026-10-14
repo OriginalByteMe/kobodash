@@ -251,6 +251,7 @@ Set `DASHBOARD=url` and `DASHBOARD_URL` to the page you want, for example your H
 | `TZ` | Your time zone, like `Europe/London`. |
 | `LAT`, `LON` | Where you are, for weather and air quality. |
 | `AQI_INDEX` | `us` (default) for the US AQI, or `malaysia` for Malaysia's Air Pollutant Index (API) from the Department of Environment. |
+| `TITLE` | Optional heading across the top of `home`, like `Our kitchen`. |
 | `REFRESH` | Seconds between updates. Default 180. A `refresh` in `dashboard.json` wins. |
 | `SCREEN`, `COLOR` | Screen size, like `1072x1448`, and `0` for a black-and-white screen or `1` for colour. Setup fills these in from your model. |
 

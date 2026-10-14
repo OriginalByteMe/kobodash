@@ -15,13 +15,13 @@ HTML = [p for p in FOLDERS if json.loads((p / "dashboard.json").read_text())["ty
 NOW = datetime(2026, 10, 13, 8, 42, tzinfo=timezone(timedelta(hours=1)))
 
 
-def render(folder: Path, src: dict, errors: dict | None = None, now=NOW, size=(1072, 1448)) -> str:
+def render(folder: Path, src: dict, errors: dict | None = None, now=NOW, size=(1072, 1448), title="") -> str:
     """The template context the server builds (see the contract), with StrictUndefined like the server."""
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(folder), autoescape=True, undefined=jinja2.StrictUndefined)
     return env.get_template("dashboard.html").render(
         src=src, errors=errors or {}, now=now, next=now + timedelta(seconds=180),
         device={"id": "My Kobo", "battery": "74", "charging": False, "rssi": "-58", "fw": "1.0.0"},
-        screen={"width": size[0], "height": size[1], "color": False}, font_dir="file:///fonts")
+        screen={"width": size[0], "height": size[1], "color": False}, font_dir="file:///fonts", title=title)
 
 
 def sources(folder: Path) -> dict:
@@ -96,6 +96,21 @@ class TestCards(unittest.TestCase):
         self.assertIn("42", html)
         self.assertIn("No cards", self.cards({"title": "T"}))
         self.assertIn("No cards", self.cards(["not", "an", "object"]))
+
+
+class TestHome(unittest.TestCase):
+    folder = ROOT / "home"
+
+    def test_air_faces_and_title(self):
+        air = sample(self.folder)["air"]
+        for aqi, face in [(0, "😄"), (50, "😄"), (51, "🙂"), (100, "🙂"), (101, "😷"), (160, "😷"),
+                          (161, "💀"), (199, "💀"), (200, "⚰️"), (400, "⚰️")]:
+            with self.subTest(aqi):
+                html = render(self.folder, {"air": {**air, "aqi": aqi}})
+                self.assertIn(f'<span class="face">{face}</span>', html)
+                self.assertEqual("Don't go outside" in html, aqi > 100)
+        self.assertIn('<div class="title">Hi &amp; bye</div>', render(self.folder, {}, title="Hi & bye"))
+        self.assertNotIn('class="title"', render(self.folder, {}))
 
 
 class TestAgenda(unittest.TestCase):
